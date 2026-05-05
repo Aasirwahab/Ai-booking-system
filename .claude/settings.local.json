@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(xargs wc *)",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "mcp__4376b9e5-b228-4ba0-b8f8-c6c11e2592e2__list_clerk_sdk_snippets"
+    ]
+  }
+}
