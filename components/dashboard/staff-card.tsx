@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { deleteStaff } from "@/actions/staff";
 
 interface StaffCardProps {
   member: {
@@ -22,11 +23,9 @@ interface StaffCardProps {
   labels: {
     staff_label: string;
   };
-  onDelete: (id: string) => Promise<void>;
-  onEdit: (member: any) => void;
 }
 
-export function StaffCard({ member, labels, onDelete, onEdit }: StaffCardProps) {
+export function StaffCard({ member, labels }: StaffCardProps) {
   const initials = member.full_name
     .split(" ")
     .map((n) => n[0])
@@ -49,11 +48,11 @@ export function StaffCard({ member, labels, onDelete, onEdit }: StaffCardProps) 
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="rounded-xl border-slate-100">
-            <DropdownMenuItem onClick={() => onEdit(member)} className="text-xs font-bold gap-2">
+            <DropdownMenuItem onClick={() => {}} className="text-xs font-bold gap-2">
               <Edit2 className="w-3.5 h-3.5" /> Edit {labels.staff_label}
             </DropdownMenuItem>
             <DropdownMenuItem 
-              onClick={() => onDelete(member.id)}
+              onClick={() => deleteStaff(member.id)}
               className="text-xs font-bold gap-2 text-destructive focus:text-destructive"
             >
               <Trash2 className="w-3.5 h-3.5" /> Remove

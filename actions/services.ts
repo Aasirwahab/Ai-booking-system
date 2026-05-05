@@ -30,10 +30,10 @@ export async function createService(formData: FormData) {
   const orgId = await getOrgId();
   const parsed = serviceSchema.parse({
     name: formData.get("name"),
-    description: formData.get("description"),
+    description: formData.get("description") || undefined,
     duration_minutes: formData.get("duration_minutes"),
     price: formData.get("price") || undefined,
-    category: formData.get("category"),
+    category: formData.get("category") || undefined,
     buffer_minutes: formData.get("buffer_minutes") || 0,
   });
 
@@ -49,10 +49,10 @@ export async function updateService(id: string, formData: FormData) {
   const orgId = await getOrgId();
   const parsed = serviceSchema.parse({
     name: formData.get("name"),
-    description: formData.get("description"),
+    description: formData.get("description") || undefined,
     duration_minutes: formData.get("duration_minutes"),
     price: formData.get("price") || undefined,
-    category: formData.get("category"),
+    category: formData.get("category") || undefined,
     buffer_minutes: formData.get("buffer_minutes") || 0,
   });
 
@@ -74,4 +74,5 @@ export async function deleteService(id: string) {
     .eq("id", id)
     .eq("organization_id", orgId);
   if (error) throw new Error(error.message);
+  revalidatePath("/dashboard/services");
 }

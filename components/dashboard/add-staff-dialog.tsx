@@ -84,16 +84,31 @@ export function AddStaffDialog({ labels, onSubmit }: AddStaffDialogProps) {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="role_title" className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-1">{labels.staff_label} Title</Label>
-            <div className="relative">
-              <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input 
-                id="role_title" 
-                name="role_title" 
-                placeholder={`e.g. Senior ${labels.staff_label}`} 
-                className="rounded-2xl h-12 pl-12 border-slate-100 bg-slate-50 focus-visible:ring-[#C1FF72] font-bold"
-              />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="role_title" className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-1">{labels.staff_label} Title</Label>
+              <div className="relative">
+                <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input 
+                  id="role_title" 
+                  name="role_title" 
+                  placeholder={`e.g. Senior ${labels.staff_label}`} 
+                  className="rounded-2xl h-12 pl-12 border-slate-100 bg-slate-50 focus-visible:ring-[#C1FF72] font-bold"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone" className="text-[10px] font-black text-slate-300 uppercase tracking-widest ml-1">Phone Number</Label>
+              <div className="relative">
+                <Plus className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input 
+                  id="phone" 
+                  name="phone" 
+                  type="tel" 
+                  placeholder="+1 (555) 000-0000" 
+                  className="rounded-2xl h-12 pl-12 border-slate-100 bg-slate-50 focus-visible:ring-[#C1FF72] font-bold"
+                />
+              </div>
             </div>
           </div>
 

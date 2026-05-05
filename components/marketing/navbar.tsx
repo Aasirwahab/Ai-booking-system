@@ -66,8 +66,12 @@ export function Navbar() {
               </>
             ) : (
               <>
-                <SignInButton mode="modal"><span className="contents"><Button variant="ghost" size="sm">Log in</Button></span></SignInButton>
-                <SignUpButton mode="modal"><span className="contents"><Button size="sm" className="gradient-brand hover:opacity-90">Get Started</Button></span></SignUpButton>
+                <SignInButton mode="modal">
+                  <Button variant="ghost" size="sm">Log in</Button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <Button size="sm" className="gradient-brand hover:opacity-90">Get Started</Button>
+                </SignUpButton>
               </>
             )}
           </div>
@@ -100,8 +104,12 @@ export function Navbar() {
                     </Link>
                   ) : (
                     <div className="flex flex-col gap-2">
-                      <SignInButton mode="modal"><span className="contents"><Button variant="outline" className="w-full">Log in</Button></span></SignInButton>
-                      <SignUpButton mode="modal"><span className="contents"><Button className="w-full gradient-brand">Get Started</Button></span></SignUpButton>
+                      <SignInButton mode="modal">
+                        <Button variant="outline" className="w-full">Log in</Button>
+                      </SignInButton>
+                      <SignUpButton mode="modal">
+                        <Button className="w-full gradient-brand">Get Started</Button>
+                      </SignUpButton>
                     </div>
                   )}
                 </div>

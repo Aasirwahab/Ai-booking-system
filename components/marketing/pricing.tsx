@@ -97,14 +97,18 @@ export function Pricing() {
                 ))}
               </ul>
 
-              <SignUpButton mode="modal"><span className="contents"><Button
+              <SignUpButton mode="modal">
+                <Button
                   className={`w-full h-12 text-base font-semibold transition-all ${
                     plan.popular
                     ? "gradient-brand hover:opacity-90"
                     : "border-slate-200 hover:bg-slate-50"
                   }`}
                   variant={plan.popular ? "default" : "outline"}
-                >{plan.cta}</Button></span></SignUpButton>
+                >
+                  {plan.cta}
+                </Button>
+              </SignUpButton>
             </div>
           ))}
         </div>

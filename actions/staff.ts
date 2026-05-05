@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrgId } from "@/lib/auth/org";
+import { revalidatePath } from "next/cache";
 
 const staffSchema = z.object({
   full_name: z.string().min(1).max(100),
@@ -27,9 +28,9 @@ export async function createStaff(formData: FormData) {
   const orgId = await getOrgId();
   const parsed = staffSchema.parse({
     full_name: formData.get("full_name"),
-    email: formData.get("email"),
-    phone: formData.get("phone"),
-    role_title: formData.get("role_title"),
+    email: formData.get("email") || undefined,
+    phone: formData.get("phone") || undefined,
+    role_title: formData.get("role_title") || undefined,
   });
 
   const supabase = createAdminClient();
@@ -50,4 +51,5 @@ export async function deleteStaff(id: string) {
     .eq("id", id)
     .eq("organization_id", orgId);
   if (error) throw new Error(error.message);
+  revalidatePath("/dashboard/staff");
 }

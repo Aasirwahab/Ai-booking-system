@@ -1,24 +1,40 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { 
-  Send, 
-  Calendar, 
-  MessageSquare, 
-  ChevronRight, 
-  Clock, 
-  ArrowLeft, 
-  CheckCircle2, 
-  User, 
-  Mail, 
+import {
+  Send,
+  Calendar as LucideCalendar,
+  MessageSquare,
+  ChevronRight,
+  Clock,
+  ArrowLeft,
+  CheckCircle2,
+  User,
+  Mail,
   Phone,
   X,
   Minimize2,
-  Maximize2
+  Maximize2,
+  Stethoscope,
+  Scissors,
+  Dumbbell,
+  type LucideIcon
 } from "lucide-react";
+
+const NICHE_ICONS: Record<string, LucideIcon> = {
+  clinic: Stethoscope,
+  medical: Stethoscope,
+  healthcare: Stethoscope,
+  salon: Scissors,
+  barbershop: Scissors,
+  spa: Scissors,
+  fitness: Dumbbell,
+  gym: Dumbbell,
+};
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
 
 interface Message {
   role: "user" | "assistant";
@@ -54,7 +70,12 @@ interface Props {
   };
 }
 
-type View = "home" | "chat" | "booking-service" | "booking-date" | "booking-slot" | "booking-details" | "booking-done";
+interface Staff {
+  id: string;
+  full_name: string;
+}
+
+type View = "home" | "chat" | "booking-service" | "booking-staff" | "booking-date" | "booking-slot" | "booking-details" | "booking-done";
 
 export function UnifiedBookingWidget({ 
   orgSlug, 
@@ -75,6 +96,8 @@ export function UnifiedBookingWidget({
   const [loading, setLoading] = useState(false);
   const [services, setServices] = useState<Service[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [staffList, setStaffList] = useState<Staff[]>([]);
+  const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   const [date, setDate] = useState("");
   const [slots, setSlots] = useState<Slot[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
@@ -100,26 +123,51 @@ export function UnifiedBookingWidget({
 
   async function fetchServices() {
     setLoading(true);
+    setError("");
     try {
       const res = await fetch(`/api/public/services?org=${orgSlug}`);
+      if (!res.ok) throw new Error("Failed to load services");
       const data = await res.json();
       setServices(data || []);
     } catch (err) {
       console.error("Failed to fetch services", err);
+      setError("We couldn't load the services. Please try again.");
+    }
+    setLoading(false);
+  }
+
+  async function fetchStaff() {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/public/staff?org=${orgSlug}`);
+      const data = await res.json();
+      const list: Staff[] = data || [];
+      setStaffList(list);
+      if (list.length <= 1) {
+        setSelectedStaff(list[0] || null);
+        setView("booking-date");
+      }
+    } catch (err) {
+      console.error("Failed to fetch staff", err);
+      setView("booking-date");
     }
     setLoading(false);
   }
 
   async function fetchSlots(serviceId: string, dateStr: string) {
     setLoading(true);
+    setError("");
     try {
+      const staffParam = selectedStaff ? `&staffId=${selectedStaff.id}` : "";
       const res = await fetch(
-        `/api/public/availability?org=${orgSlug}&serviceId=${serviceId}&date=${dateStr}`
+        `/api/public/availability?org=${orgSlug}&serviceId=${serviceId}&date=${dateStr}${staffParam}`
       );
+      if (!res.ok) throw new Error("Failed to load availability");
       const data = await res.json();
       setSlots(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Failed to fetch slots", err);
+      setError("Could not load available times.");
     }
     setLoading(false);
   }
@@ -194,10 +242,28 @@ export function UnifiedBookingWidget({
     setLoading(false);
   }
 
+  const bookingSteps = ["booking-service", "booking-staff", "booking-date", "booking-slot", "booking-details"] as const;
+  const currentStep = bookingSteps.indexOf(view as any);
+
+  const renderProgress = () => currentStep >= 0 ? (
+    <div className="flex items-center justify-center gap-1.5 py-2">
+      {bookingSteps.map((_, i) => (
+        <div
+          key={i}
+          className={`h-1 rounded-full transition-all ${
+            i <= currentStep ? "w-6 dynamic-bg" : "w-1.5 bg-slate-200"
+          }`}
+        />
+      ))}
+    </div>
+  ) : null;
+
+  const NicheIcon = NICHE_ICONS[industry.toLowerCase()] || MessageSquare;
+
   const renderHome = () => (
     <div className="flex flex-col h-full items-center justify-center p-6 space-y-8 animate-in fade-in duration-500">
       <div className="w-20 h-20 rounded-[2.5rem] flex items-center justify-center shadow-lg dynamic-bg">
-        <MessageSquare className="w-10 h-10 text-slate-900" />
+        <NicheIcon className="w-10 h-10 text-slate-900" />
       </div>
       
       <div className="text-center space-y-2">
@@ -210,7 +276,7 @@ export function UnifiedBookingWidget({
           onClick={() => setView("booking-service")}
           className="w-full h-16 rounded-2xl font-black text-lg shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98] dynamic-bg text-slate-900"
         >
-          <Calendar className="w-5 h-5 mr-2" />
+          <LucideCalendar className="w-5 h-5 mr-2" />
           Book {labels.booking}
         </Button>
         <Button 
@@ -294,6 +360,7 @@ export function UnifiedBookingWidget({
         </Button>
         <h3 className="font-black text-sm text-slate-900">Select {labels.service}</h3>
       </div>
+      {renderProgress()}
 
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {loading ? (
@@ -302,13 +369,42 @@ export function UnifiedBookingWidget({
               <div key={i} className="h-24 bg-slate-50 rounded-2xl animate-pulse" />
             ))}
           </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center h-full text-center space-y-4 p-8">
+            <p className="text-sm font-bold text-red-500">{error}</p>
+            <Button 
+              variant="outline" 
+              onClick={() => fetchServices()}
+              className="rounded-xl font-bold"
+            >
+              Try Again
+            </Button>
+          </div>
+        ) : services.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-center space-y-6 p-8">
+            <div className="w-20 h-20 rounded-[2rem] bg-slate-50 flex items-center justify-center">
+              <NicheIcon className="w-10 h-10 text-slate-200" />
+            </div>
+            <div className="space-y-2">
+              <p className="font-black text-slate-900">No {labels.service.toLowerCase()}s found</p>
+              <p className="text-xs font-bold text-slate-400">This organization hasn't added any {labels.service.toLowerCase()}s yet.</p>
+            </div>
+            <Button 
+              variant="outline" 
+              onClick={() => setView("home")}
+              className="rounded-xl font-bold"
+            >
+              Go Back
+            </Button>
+          </div>
         ) : (
           services.map(s => (
             <button 
               key={s.id}
               onClick={() => {
                 setSelectedService(s);
-                setView("booking-date");
+                setView("booking-staff");
+                fetchStaff();
               }}
               className="w-full group flex items-center justify-between p-4 bg-slate-50 hover:bg-white border border-transparent hover:border-slate-100 rounded-2xl transition-all hover:shadow-md"
             >
@@ -329,42 +425,81 @@ export function UnifiedBookingWidget({
     </div>
   );
 
-  const renderBookingDate = () => (
+  const renderBookingStaff = () => (
     <div className="flex flex-col h-full animate-in slide-in-from-right-4 duration-300">
       <div className="flex items-center gap-3 p-4 border-b">
         <Button variant="ghost" size="icon" onClick={() => setView("booking-service")} className="rounded-xl">
           <ArrowLeft className="w-5 h-5" />
         </Button>
+        <h3 className="font-black text-sm text-slate-900">Select {labels.staff}</h3>
+      </div>
+      {renderProgress()}
+
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {loading ? (
+          <div className="space-y-3">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-20 bg-slate-50 rounded-2xl animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          staffList.map(s => (
+            <button
+              key={s.id}
+              onClick={() => {
+                setSelectedStaff(s);
+                setView("booking-date");
+              }}
+              className="w-full group flex items-center justify-between p-4 bg-slate-50 hover:bg-white border border-transparent hover:border-slate-100 rounded-2xl transition-all hover:shadow-md"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                  <User className="w-5 h-5 text-slate-400 group-hover:text-slate-900 transition-colors" />
+                </div>
+                <div className="text-left">
+                  <p className="font-black text-slate-900 text-sm">{s.full_name}</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{labels.staff}</p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-900 transition-all" />
+            </button>
+          ))
+        )}
+      </div>
+    </div>
+  );
+
+  const renderBookingDate = () => (
+    <div className="flex flex-col h-full animate-in slide-in-from-right-4 duration-300">
+      <div className="flex items-center gap-3 p-4 border-b">
+        <Button variant="ghost" size="icon" onClick={() => staffList.length > 1 ? setView("booking-staff") : setView("booking-service")} className="rounded-xl">
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
         <h3 className="font-black text-sm text-slate-900">Choose Date</h3>
       </div>
+      {renderProgress()}
 
-      <div className="flex-1 p-6 space-y-6">
-        <div className="bg-slate-50 rounded-3xl p-6 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm">
-              <Calendar className="w-5 h-5 text-slate-400" />
-            </div>
-            <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Select your date</p>
-          </div>
-          
-          <Label htmlFor="booking-date" className="sr-only">Select date</Label>
-          <input 
-            id="booking-date"
-            type="date"
-            title="Date"
-            aria-label="Select date"
-            value={date}
-            min={new Date().toISOString().split("T")[0]}
-            onChange={(e) => {
-              setDate(e.target.value);
-              fetchSlots(selectedService!.id, e.target.value);
-              setView("booking-slot");
+      <div className="flex-1 p-4 overflow-y-auto flex flex-col items-center">
+        <div className="w-full max-w-[320px] bg-white rounded-3xl p-2 shadow-sm border border-slate-100">
+          <Calendar
+            mode="single"
+            selected={date ? new Date(date) : undefined}
+            onSelect={(d) => {
+              if (d) {
+                const dateStr = d.toISOString().split("T")[0];
+                setDate(dateStr);
+                fetchSlots(selectedService!.id, dateStr);
+                setView("booking-slot");
+              }
             }}
-            className="w-full h-14 px-4 rounded-xl border-none font-black text-slate-900 outline-none focus:ring-2 shadow-sm dynamic-ring"
+            disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
+            className="rounded-2xl"
           />
         </div>
         
-        <p className="text-center text-xs font-bold text-slate-400">Available slots will be shown next</p>
+        <p className="text-center text-[10px] font-black text-slate-300 uppercase tracking-widest mt-6">
+          Pick a date to see available {labels.staff.toLowerCase()} slots
+        </p>
       </div>
     </div>
   );
@@ -377,6 +512,7 @@ export function UnifiedBookingWidget({
         </Button>
         <h3 className="font-black text-sm text-slate-900">Available Slots</h3>
       </div>
+      {renderProgress()}
 
       <div className="flex-1 overflow-y-auto p-4">
         {loading ? (
@@ -388,7 +524,7 @@ export function UnifiedBookingWidget({
         ) : slots.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
             <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center">
-              <Calendar className="w-8 h-8 text-slate-200" />
+              <LucideCalendar className="w-8 h-8 text-slate-200" />
             </div>
             <div>
               <p className="font-black text-slate-900">No slots available</p>
@@ -426,6 +562,7 @@ export function UnifiedBookingWidget({
         </Button>
         <h3 className="font-black text-sm text-slate-900">Your Details</h3>
       </div>
+      {renderProgress()}
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
         <div className="bg-slate-900 rounded-3xl p-5 text-white shadow-xl">
@@ -544,6 +681,7 @@ export function UnifiedBookingWidget({
         {view === "home" && renderHome()}
         {view === "chat" && renderChat()}
         {view === "booking-service" && renderBookingService()}
+        {view === "booking-staff" && renderBookingStaff()}
         {view === "booking-date" && renderBookingDate()}
         {view === "booking-slot" && renderBookingSlot()}
         {view === "booking-details" && renderBookingDetails()}

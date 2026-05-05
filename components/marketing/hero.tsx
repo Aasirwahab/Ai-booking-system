@@ -1,9 +1,13 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Calendar, Sparkles, ShieldCheck } from "lucide-react";
-import { SignUpButton } from "@clerk/nextjs";
+import { useClerk } from "@clerk/nextjs";
 
 export function Hero() {
+  const { openSignUp } = useClerk();
+
   return (
     <section className="relative pt-32 pb-20 overflow-hidden">
       {/* Background Mesh */}
@@ -28,7 +32,10 @@ export function Hero() {
         </p>
         
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <SignUpButton mode="modal"><span className="contents"><Button size="lg" className="h-14 px-8 text-lg font-semibold gradient-brand hover:opacity-90 shadow-lg shadow-teal-500/20 w-full sm:w-auto group">Start Free Trial<ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" /></Button></span></SignUpButton>
+          <Button onClick={() => openSignUp()} size="lg" className="h-14 px-8 text-lg font-semibold gradient-brand hover:opacity-90 shadow-lg shadow-teal-500/20 w-full sm:w-auto group">
+            Start Free Trial
+            <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </Button>
           <Button size="lg" variant="outline" className="h-14 px-8 text-lg font-semibold bg-white/50 backdrop-blur-sm w-full sm:w-auto">
             Watch Demo
           </Button>

@@ -17,11 +17,6 @@ export default async function StaffPage() {
     revalidatePath("/dashboard/staff");
   }
 
-  async function handleDelete(id: string) {
-    "use server";
-    await deleteStaff(id);
-    revalidatePath("/dashboard/staff");
-  }
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -55,8 +50,6 @@ export default async function StaffPage() {
               key={member.id} 
               member={member as any} 
               labels={labels}
-              onDelete={handleDelete}
-              onEdit={() => {}} // TODO: Implement edit
             />
           ))}
         </div>

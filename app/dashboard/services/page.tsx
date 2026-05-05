@@ -17,11 +17,6 @@ export default async function ServicesPage() {
     revalidatePath("/dashboard/services");
   }
 
-  async function handleDelete(id: string) {
-    "use server";
-    await deleteService(id);
-    revalidatePath("/dashboard/services");
-  }
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -55,8 +50,6 @@ export default async function ServicesPage() {
               key={service.id} 
               service={service as any} 
               labels={labels}
-              onDelete={handleDelete}
-              onEdit={async () => {}} // TODO: Implement edit
             />
           ))}
         </div>

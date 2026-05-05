@@ -6,9 +6,10 @@ import {
   DropdownMenuContent, 
   DropdownMenuItem, 
   DropdownMenuTrigger 
-} from "@/components/ui/button";
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { deleteService } from "@/actions/services";
 
 interface ServiceCardProps {
   service: {
@@ -23,11 +24,9 @@ interface ServiceCardProps {
   labels: {
     service_label: string;
   };
-  onDelete: (id: string) => Promise<void>;
-  onEdit: (service: any) => void;
 }
 
-export function ServiceCard({ service, labels, onDelete, onEdit }: ServiceCardProps) {
+export function ServiceCard({ service, labels }: ServiceCardProps) {
   return (
     <div className="premium-card p-6 flex flex-col h-full group hover:border-[#C1FF72]/50">
       <div className="flex items-start justify-between mb-4">
@@ -47,11 +46,11 @@ export function ServiceCard({ service, labels, onDelete, onEdit }: ServiceCardPr
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="rounded-xl border-slate-100">
-              <DropdownMenuItem onClick={() => onEdit(service)} className="text-xs font-bold gap-2">
+              <DropdownMenuItem onClick={() => {}} className="text-xs font-bold gap-2">
                 <Edit2 className="w-3.5 h-3.5" /> Edit {labels.service_label}
               </DropdownMenuItem>
               <DropdownMenuItem 
-                onClick={() => onDelete(service.id)}
+                onClick={() => deleteService(service.id)}
                 className="text-xs font-bold gap-2 text-destructive focus:text-destructive"
               >
                 <Trash2 className="w-3.5 h-3.5" /> Remove
