@@ -1,9 +1,10 @@
-import { getAvailability, createAvailability, deleteAvailability } from "@/actions/availability";
-import { DAYS } from "@/lib/constants";
+import { getAvailability, createAvailability } from "@/actions/availability";
 import { getStaff } from "@/actions/staff";
 import { getNicheSettings } from "@/lib/auth/niche";
 import { getOrgId } from "@/lib/auth/org";
 import { revalidatePath } from "next/cache";
+import { AvailabilityForm } from "@/components/dashboard/availability-form";
+import { AvailabilityList } from "@/components/dashboard/availability-list";
 
 export default async function AvailabilityPage() {
   const orgId = await getOrgId();
@@ -16,105 +17,41 @@ export default async function AvailabilityPage() {
     revalidatePath("/dashboard/availability");
   }
 
-  async function handleDelete(formData: FormData) {
-    "use server";
-    const id = formData.get("id") as string;
-    await deleteAvailability(id);
-    revalidatePath("/dashboard/availability");
-  }
-
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Availability</h1>
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-4xl font-black text-[#0f172a] tracking-tight">
+            Schedule & Availability
+          </h1>
+          <p className="text-slate-400 font-bold mt-1">
+            Configure working hours for your {labels.staff_label_plural.toLowerCase()}.
+          </p>
+        </div>
+      </div>
 
       {staff.length === 0 ? (
-        <p className="text-muted-foreground">
-          Add a {labels.staff_label.toLowerCase()} first before setting availability.
-        </p>
+        <div className="premium-card p-20 flex flex-col items-center justify-center text-center border-dashed border-2 border-slate-100">
+          <p className="text-slate-400 font-bold max-w-xs mx-auto">
+            Add a {labels.staff_label.toLowerCase()} first before setting availability.
+          </p>
+        </div>
       ) : (
         <>
-          <form action={handleCreate} className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8 p-4 border rounded-lg">
-            <select 
-              name="staff_id" 
-              required 
-              aria-label={`Select ${labels.staff_label}`}
-              title={`Select ${labels.staff_label}`}
-              className="border rounded px-3 py-2 text-sm"
-            >
-              <option value="">Select {labels.staff_label}</option>
-              {staff.map((s: any) => (
-                <option key={s.id} value={s.id}>{s.full_name}</option>
-              ))}
-            </select>
-            <select 
-              name="day_of_week" 
-              required 
-              aria-label="Select day of week"
-              title="Select day of week"
-              className="border rounded px-3 py-2 text-sm"
-            >
-              {DAYS.map((d, i) => (
-                <option key={i} value={i}>{d}</option>
-              ))}
-            </select>
-            <input 
-              name="start_time" 
-              type="time" 
-              defaultValue="09:00" 
-              required 
-              aria-label="Start time"
-              title="Start time"
-              className="border rounded px-3 py-2 text-sm" 
+          <AvailabilityForm 
+            staff={staff} 
+            labels={labels} 
+            onSubmit={handleCreate} 
+          />
+          
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-black text-[#0f172a]">Active Schedules</h2>
+            </div>
+            <AvailabilityList 
+              rules={rules} 
+              labels={labels} 
             />
-            <input 
-              name="end_time" 
-              type="time" 
-              defaultValue="17:00" 
-              required 
-              aria-label="End time"
-              title="End time"
-              className="border rounded px-3 py-2 text-sm" 
-            />
-            <button type="submit" className="bg-primary text-primary-foreground rounded px-4 py-2 text-sm font-medium hover:bg-primary/90">
-              Add Rule
-            </button>
-          </form>
-
-          <div className="border rounded-lg overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-muted">
-                <tr>
-                  <th className="text-left px-4 py-3 font-medium">{labels.staff_label}</th>
-                  <th className="text-left px-4 py-3 font-medium">Day</th>
-                  <th className="text-left px-4 py-3 font-medium">Start</th>
-                  <th className="text-left px-4 py-3 font-medium">End</th>
-                  <th className="px-4 py-3" />
-                </tr>
-              </thead>
-              <tbody>
-                {rules.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
-                      No availability rules yet
-                    </td>
-                  </tr>
-                )}
-                {rules.map((r: any) => (
-                  <tr key={r.id} className="border-t">
-                    <td className="px-4 py-3 font-medium">{r.staff?.full_name ?? "—"}</td>
-                    <td className="px-4 py-3">{DAYS[r.day_of_week]}</td>
-                    <td className="px-4 py-3">{r.start_time}</td>
-                    <td className="px-4 py-3">{r.end_time}</td>
-                    <td className="px-4 py-3">
-                      <form action={handleDelete}>
-                        <input type="hidden" name="id" value={r.id} />
-                        <button type="submit" className="text-destructive text-xs hover:underline">Remove</button>
-                      </form>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
         </>
       )}
