@@ -23,14 +23,18 @@ export async function POST(req: NextRequest) {
   const { orgSlug, messages } = parsed.data;
   const supabase = createAdminClient();
 
-  const { data: org } = await supabase
+  const { data: org, error: orgError } = await supabase
     .from("organizations")
     .select("id, name, industry, agent_instructions, booking_instructions")
     .eq("slug", orgSlug)
     .single();
 
+  if (orgError) {
+    console.error("Supabase org error:", orgError);
+  }
+
   if (!org) {
-    return NextResponse.json({ error: "Organization not found" }, { status: 404 });
+    return NextResponse.json({ error: "Organization not found", details: orgError }, { status: 404 });
   }
 
   // Fetch FAQs
