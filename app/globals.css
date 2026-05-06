@@ -156,6 +156,7 @@
   /* Smooth scrollbar */
   .scrollbar-hide {
     -ms-overflow-style: none;
+    /* stylelint-disable-next-line */
     scrollbar-width: none;
     &::-webkit-scrollbar {
       display: none;

@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
-import { UnifiedBookingWidget } from "@/components/widget/booking-widget";
+import { WidgetLauncher } from "@/components/widget/widget-launcher";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -25,21 +25,22 @@ export default async function EmbedChatPage({ params }: Props) {
     .single();
 
   return (
-    <div className="h-screen flex flex-col bg-transparent">
-      <UnifiedBookingWidget 
-        orgSlug={org.slug} 
-        orgName={org.name}
-        industry={org.industry}
-        widgetColor={org.widget_color}
-        welcomeMessage={org.welcome_message}
-        labels={{
-          service: niche?.service_label || "Service",
-          staff: niche?.staff_label || "Staff",
-          booking: niche?.booking_label || "Booking",
-          patient: niche?.patient_label || "Client"
-        }}
-      />
+    <div className="h-screen w-full bg-transparent pointer-events-none">
+      <div className="pointer-events-auto">
+        <WidgetLauncher 
+          orgSlug={org.slug} 
+          orgName={org.name}
+          industry={org.industry}
+          widgetColor={org.widget_color}
+          welcomeMessage={org.welcome_message}
+          labels={{
+            service: niche?.service_label || "Service",
+            staff: niche?.staff_label || "Staff",
+            booking: niche?.booking_label || "Booking",
+            patient: niche?.patient_label || "Client"
+          }}
+        />
+      </div>
     </div>
   );
 }
-
