@@ -12,6 +12,7 @@ const schema = z.object({
     fullName: z.string().min(1),
     email: z.string().email(),
     phone: z.string().optional(),
+    gender: z.string().optional(),
   }),
   notes: z.string().optional(),
 });
@@ -56,6 +57,7 @@ export async function POST(req: NextRequest) {
         email: customer.email,
         phone: customer.phone || null,
         source: "public_page",
+        custom_fields: customer.gender ? { gender: customer.gender } : {},
       })
       .select("id")
       .single();

@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 
   const { data } = await supabase
     .from("services")
-    .select("id, name, description, duration_minutes, price")
+    .select("id, name, description, duration_minutes, price, category")
     .eq("organization_id", org.id)
     .eq("is_active", true)
     .order("name");

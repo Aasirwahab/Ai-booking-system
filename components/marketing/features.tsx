@@ -1,4 +1,3 @@
-import { Card, CardContent } from "@/components/ui/button"; // Using Card from UI if available, otherwise just divs
 import { 
   Bot, 
   LayoutDashboard, 

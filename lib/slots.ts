@@ -31,7 +31,9 @@ export async function getAvailableSlots(
   const duration = service.duration_minutes + service.buffer_minutes;
 
   // 2. Get day of week for the date
-  const dayOfWeek = new Date(date).getDay();
+  // Parse date string (YYYY-MM-DD) carefully to avoid timezone shifts
+  const [year, month, day] = date.split("-").map(Number);
+  const dayOfWeek = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
 
   // 3. Get availability rules for that day
   let rulesQuery = supabase

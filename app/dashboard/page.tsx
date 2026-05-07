@@ -181,11 +181,7 @@ export default async function DashboardPage() {
                 <div 
                   className="h-full bg-[#C1FF72] rounded-full shadow-[0_0_15px_rgba(193,255,114,0.5)] w-[92%]" 
                   role="progressbar"
-                  aria-valuenow="92"
-                  aria-valuemin="0"
-                  aria-valuemax="100"
-                  aria-label="Efficiency Rating"
-                  title="Efficiency Rating: 92%"
+                  aria-label="Efficiency Rating: 92%"
                 />
             </div>
             <div className="flex justify-between mt-3">

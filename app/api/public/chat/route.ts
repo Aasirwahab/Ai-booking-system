@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     .eq("organization_id", org.id);
 
   try {
-    const reply = await runAgent(messages, {
+    const { reply, options } = await runAgent(messages, {
       orgId: org.id,
       orgName: org.name,
       orgIndustry: org.industry,
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     });
 
 
-    return NextResponse.json({ reply });
+    return NextResponse.json({ reply, options });
   } catch (err) {
     console.error("AI agent error:", err);
     return NextResponse.json(

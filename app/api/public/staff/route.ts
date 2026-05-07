@@ -17,8 +17,9 @@ export async function GET(req: NextRequest) {
 
   const { data } = await supabase
     .from("staff_profiles")
-    .select("id, full_name")
+    .select("id, full_name, role_title, avatar_url")
     .eq("organization_id", org.id)
+    .eq("is_active", true)
     .order("full_name");
 
   return NextResponse.json(data ?? []);
