@@ -4,7 +4,7 @@ AI-powered booking and client management system for service businesses (clinics,
 
 ## Stack
 
-- **Framework:** Next.js 15 (App Router) + TypeScript + Tailwind + shadcn/ui
+- **Framework:** Next.js 16 (App Router) + TypeScript + Tailwind + shadcn/ui
 - **Auth:** Clerk (with Organizations)
 - **Database:** Supabase Postgres + RLS + Realtime
 - **AI:** OpenAI (`gpt-4o-mini` default), tool-calling agent
