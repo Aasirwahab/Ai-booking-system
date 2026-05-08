@@ -13,6 +13,7 @@ import {
 import { PremiumMetricCard } from "@/components/dashboard/premium-metric-card";
 import { EfficiencyDonutChart, RevenueBarChart } from "@/components/dashboard/dashboard-charts";
 import { ActivityTimeline } from "@/components/dashboard/activity-timeline";
+import { RealtimeDashboard } from "@/components/dashboard/realtime-dashboard";
 import { getDashboardStats } from "@/actions/analytics";
 import { format } from "date-fns";
 
@@ -23,6 +24,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <RealtimeDashboard orgId={ctx.org!.id} />
       {/* Welcome Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
@@ -97,7 +99,7 @@ export default async function DashboardPage() {
                    </div>
                 </div>
              </div>
-             <RevenueBarChart />
+             <RevenueBarChart data={stats.weeklyRevenue} />
           </div>
 
           <div className="premium-card p-8 overflow-hidden">
@@ -162,10 +164,10 @@ export default async function DashboardPage() {
         <div className="xl:col-span-4 space-y-8">
           <div className="premium-card p-8">
             <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xl font-black text-[#0f172a]">Client Growth</h3>
+              <h3 className="text-xl font-black text-[#0f172a]">Service Distribution</h3>
               <Activity className="w-5 h-5 text-[#C1FF72]" />
             </div>
-            <EfficiencyDonutChart />
+            <EfficiencyDonutChart data={stats.serviceDistribution} />
           </div>
 
           {/* AI Performance Card */}
@@ -195,7 +197,7 @@ export default async function DashboardPage() {
               <h3 className="text-xl font-black text-[#0f172a]">Live Activity</h3>
               <span className="flex h-2 w-2 rounded-full bg-[#C1FF72] animate-pulse" />
             </div>
-            <ActivityTimeline />
+            <ActivityTimeline activities={stats.activityLogs} />
           </div>
         </div>
       </div>

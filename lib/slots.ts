@@ -1,14 +1,16 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export interface TimeSlot {
-  start_time: string; // ISO string
+  start_time: string; // ISO string (naive, represents local business time)
   end_time: string;
   staff_id: string;
   staff_name: string;
+  booked: boolean;
 }
 
 /**
- * Compute available time slots for a given date, service, and optionally a specific staff member.
+ * Compute time slots for a given date, service, and optionally a specific staff member.
+ * Returns all slots within availability hours, each marked as booked or available.
  */
 export async function getAvailableSlots(
   orgId: string,
@@ -31,7 +33,6 @@ export async function getAvailableSlots(
   const duration = service.duration_minutes + service.buffer_minutes;
 
   // 2. Get day of week for the date
-  // Parse date string (YYYY-MM-DD) carefully to avoid timezone shifts
   const [year, month, day] = date.split("-").map(Number);
   const dayOfWeek = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
 
@@ -50,21 +51,27 @@ export async function getAvailableSlots(
   const { data: rules } = await rulesQuery;
   if (!rules || rules.length === 0) return [];
 
-  // 4. Get existing bookings for that date
-  const dateStart = `${date}T00:00:00`;
-  const dateEnd = `${date}T23:59:59`;
+  // 4. Get ALL existing bookings for that date (pending + confirmed)
+  // Use broad range covering the full day to catch timezone offsets
+  const dayStartLocal = new Date(`${date}T00:00:00`);
+  const dayEndLocal = new Date(`${date}T23:59:59`);
 
   const { data: existingBookings } = await supabase
     .from("bookings")
-    .select("staff_id, start_time, end_time")
+    .select("staff_id, start_time, end_time, status")
     .eq("organization_id", orgId)
-    .gte("start_time", dateStart)
-    .lte("start_time", dateEnd)
+    .gte("start_time", dayStartLocal.toISOString())
+    .lte("start_time", dayEndLocal.toISOString())
     .in("status", ["pending", "confirmed"]);
 
-  const bookedSlots = existingBookings ?? [];
+  // Convert booking times to millisecond timestamps for comparison
+  const bookedRanges = (existingBookings ?? []).map((b) => ({
+    staff_id: b.staff_id,
+    startMs: new Date(b.start_time).getTime(),
+    endMs: new Date(b.end_time).getTime(),
+  }));
 
-  // 5. Compute free slots
+  // 5. Compute all slots, marking booked ones
   const slots: TimeSlot[] = [];
 
   for (const rule of rules) {
@@ -85,24 +92,26 @@ export async function getAvailableSlots(
       const slotStart = `${date}T${slotStartH}:${slotStartM}:00`;
       const slotEnd = `${date}T${slotEndH}:${slotEndM}:00`;
 
-      // Check for conflicts
-      const hasConflict = bookedSlots.some(
+      // Parse as local time (same timezone as the clinic) for proper UTC comparison
+      const slotStartMs = new Date(slotStart).getTime();
+      const slotEndMs = new Date(slotEnd).getTime();
+
+      const isBooked = bookedRanges.some(
         (b) =>
           b.staff_id === rule.staff_id &&
-          slotStart < b.end_time &&
-          slotEnd > b.start_time
+          slotStartMs < b.endMs &&
+          slotEndMs > b.startMs
       );
 
-      if (!hasConflict) {
-        slots.push({
-          start_time: slotStart,
-          end_time: slotEnd,
-          staff_id: rule.staff_id,
-          staff_name: staffInfo?.full_name ?? "Staff",
-        });
-      }
+      slots.push({
+        start_time: slotStart,
+        end_time: slotEnd,
+        staff_id: rule.staff_id,
+        staff_name: staffInfo?.full_name ?? "Staff",
+        booked: isBooked,
+      });
 
-      cursor += duration; // move by duration + buffer
+      cursor += duration;
     }
   }
 

@@ -4,7 +4,9 @@ import { UserButton } from "@clerk/nextjs";
 import { Bell, Search, Settings, Inbox } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
-export function DashboardHeader({ userName }: { userName: string }) {
+import { NotificationCenter } from "./notification-center";
+
+export function DashboardHeader({ userName, orgId, initialNotifications }: { userName: string, orgId: string, initialNotifications: any[] }) {
   return (
     <header className="h-20 bg-[#f8fafc] flex items-center justify-between px-10 sticky top-0 z-30">
       <div className="flex items-center gap-4 flex-1 max-w-2xl">
@@ -28,14 +30,8 @@ export function DashboardHeader({ userName }: { userName: string }) {
           >
             <Inbox className="w-5 h-5" />
           </button>
-          <button 
-            aria-label="Notifications"
-            title="Notifications"
-            className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-slate-500 hover:text-[#0f172a] transition-colors relative"
-          >
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
-          </button>
+          
+          <NotificationCenter orgId={orgId} initialNotifications={initialNotifications} />
         </div>
         
         <div className="h-8 w-[1px] bg-slate-200" />

@@ -62,6 +62,7 @@ interface Slot {
   end_time: string;
   staff_id: string;
   staff_name: string;
+  booked?: boolean;
 }
 
 interface Props {
@@ -644,18 +645,33 @@ export function UnifiedBookingWidget({
         ) : (
           <div className="grid grid-cols-2 gap-2">
             {slots.map((slot, i) => (
-              <button 
+              <button
                 key={i}
+                disabled={slot.booked}
                 onClick={() => {
-                  setSelectedSlot(slot);
-                  setView("booking-details");
+                  if (!slot.booked) {
+                    setSelectedSlot(slot);
+                    setView("booking-details");
+                  }
                 }}
-                className="p-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-center transition-all group"
+                className={`p-3 border rounded-xl text-center transition-all group ${
+                  slot.booked
+                    ? "bg-red-50 border-red-200 cursor-not-allowed opacity-75"
+                    : "bg-white hover:bg-slate-50 border-slate-200"
+                }`}
               >
-                <p className="font-semibold text-slate-900 text-sm group-hover:scale-105 transition-transform">
+                <p className={`font-semibold text-sm ${
+                  slot.booked
+                    ? "text-red-400 line-through"
+                    : "text-slate-900 group-hover:scale-105 transition-transform"
+                }`}>
                   {new Date(slot.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </p>
-                <p className="text-[9px] font-medium text-slate-400 mt-0.5 truncate">{slot.staff_name}</p>
+                <p className={`text-[9px] font-medium mt-0.5 truncate ${
+                  slot.booked ? "text-red-400" : "text-slate-400"
+                }`}>
+                  {slot.booked ? "Booked" : slot.staff_name}
+                </p>
               </button>
             ))}
           </div>

@@ -3,6 +3,7 @@ import { getNicheSettings } from "@/lib/auth/niche";
 import { RealtimeProvider } from "@/components/dashboard/realtime-provider";
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { getActivityLogs } from "@/actions/activity";
 
 export default async function DashboardLayout({
   children,
@@ -11,6 +12,7 @@ export default async function DashboardLayout({
 }) {
   const ctx = await getCurrentUser({ requireOrg: true });
   const labels = await getNicheSettings(ctx.org!.id);
+  const activityLogs = await getActivityLogs();
 
   return (
     <div className="flex h-screen bg-slate-50/50 overflow-hidden">
@@ -26,7 +28,7 @@ export default async function DashboardLayout({
       />
 
       <div className="flex-1 flex flex-col min-w-0">
-        <DashboardHeader userName={ctx.firstName ?? ctx.email} />
+        <DashboardHeader userName={ctx.firstName ?? ctx.email} orgId={ctx.org!.id} initialNotifications={activityLogs} />
         
         <main className="flex-1 overflow-y-auto custom-scrollbar">
           <RealtimeProvider orgId={ctx.org!.id}>

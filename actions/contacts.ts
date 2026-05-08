@@ -4,6 +4,8 @@ import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrgId } from "@/lib/auth/org";
 
+import { logActivity } from "@/actions/activity";
+
 const contactSchema = z.object({
   full_name: z.string().min(1).max(100),
   email: z.string().email().optional().or(z.literal("")),
@@ -19,6 +21,7 @@ export async function getContacts() {
     .from("contacts")
     .select("*")
     .eq("organization_id", orgId)
+    .eq("status", "active")
     .is("deleted_at", null)
     .order("created_at", { ascending: false });
   return data ?? [];
@@ -44,7 +47,16 @@ export async function createContact(formData: FormData) {
     })
     .select()
     .single();
+
   if (error) throw new Error(error.message);
+
+  await logActivity(
+    "contact_created",
+    "New patient registered",
+    `${parsed.full_name} was added to the patient list`,
+    { contact_id: data.id }
+  );
+
   return data;
 }
 

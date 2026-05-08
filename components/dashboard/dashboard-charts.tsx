@@ -15,37 +15,23 @@ import {
   Bar
 } from "recharts";
 
-const areaData = [
-  { name: "Sun", count: 4 },
-  { name: "Mon", count: 3 },
-  { name: "Tue", count: 9 },
-  { name: "Wed", count: 4 },
-  { name: "Thu", count: 5 },
-  { name: "Fri", count: 8 },
-  { name: "Sat", count: 6 },
-];
+interface ChartData {
+  name: string;
+  revenue?: number;
+  count?: number;
+}
 
-const barData = [
-  { name: "Mon", revenue: 4000 },
-  { name: "Tue", revenue: 3000 },
-  { name: "Wed", revenue: 2000 },
-  { name: "Thu", revenue: 2780 },
-  { name: "Fri", revenue: 1890 },
-  { name: "Sat", revenue: 2390 },
-  { name: "Sun", revenue: 3490 },
-];
+interface PieData {
+  name: string;
+  value: number;
+  color: string;
+}
 
-const pieData = [
-  { name: "Consultations", value: 50, color: "#1e293b" },
-  { name: "Procedures", value: 30, color: "#C1FF72" },
-  { name: "Follow-ups", value: 20, color: "#cbd5e1" },
-];
-
-export function RevenueBarChart() {
+export function RevenueBarChart({ data }: { data: ChartData[] }) {
   return (
     <div className="h-[300px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={barData}>
+        <BarChart data={data}>
           <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#f1f5f9" />
           <XAxis 
             dataKey="name" 
@@ -76,13 +62,13 @@ export function RevenueBarChart() {
   );
 }
 
-export function MainAreaChart({ bookingLabel }: { bookingLabel: string }) {
+export function MainAreaChart({ data, totalBookings }: { data: ChartData[], totalBookings: number }) {
   return (
     <div className="premium-card p-8 h-[400px] flex flex-col">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h3 className="text-xl font-black text-[#0f172a]">Appointment Trends</h3>
-          <p className="text-xs font-bold text-slate-400 mt-1">Total Bookings <span className="text-[#0f172a]">156</span></p>
+          <p className="text-xs font-bold text-slate-400 mt-1">Total Bookings <span className="text-[#0f172a]">{totalBookings}</span></p>
         </div>
         <select 
           aria-label="Filter chart by time"
@@ -95,7 +81,7 @@ export function MainAreaChart({ bookingLabel }: { bookingLabel: string }) {
       
       <div className="flex-1 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={areaData}>
+          <AreaChart data={data}>
             <defs>
               <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#C1FF72" stopOpacity={0.3}/>
@@ -130,19 +116,21 @@ export function MainAreaChart({ bookingLabel }: { bookingLabel: string }) {
   );
 }
 
-export function EfficiencyDonutChart() {
+export function EfficiencyDonutChart({ data }: { data: PieData[] }) {
+  const total = data.reduce((acc, curr) => acc + curr.value, 0);
+  
   return (
     <div className="h-[200px] w-full relative flex items-center justify-center">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
-            data={pieData}
+            data={data}
             innerRadius={60}
             outerRadius={80}
             paddingAngle={5}
             dataKey="value"
           >
-            {pieData.map((entry, index) => (
+            {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
           </Pie>
@@ -150,10 +138,12 @@ export function EfficiencyDonutChart() {
       </ResponsiveContainer>
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Total Capacity</p>
-        <p className="text-2xl font-black text-[#0f172a]">100%</p>
-        <p className="text-[10px] font-bold text-emerald-500 flex items-center gap-1 mt-1">
-          ↑ 1.5%
-        </p>
+        <p className="text-2xl font-black text-[#0f172a]">{total > 0 ? "100%" : "0%"}</p>
+        {total > 0 && (
+          <p className="text-[10px] font-bold text-emerald-500 flex items-center gap-1 mt-1">
+            ↑ 1.5%
+          </p>
+        )}
       </div>
     </div>
   );

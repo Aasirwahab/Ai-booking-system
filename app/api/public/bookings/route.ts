@@ -57,6 +57,7 @@ export async function POST(req: NextRequest) {
         email: customer.email,
         phone: customer.phone || null,
         source: "public_page",
+        status: "pending",
         custom_fields: customer.gender ? { gender: customer.gender } : {},
       })
       .select("id")
@@ -83,6 +84,17 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (bookError) return NextResponse.json({ error: bookError.message }, { status: 500 });
+
+  // Log activity so it appears as a notification for the clinic
+  await supabase
+    .from("activity_logs")
+    .insert({
+      organization_id: org.id,
+      type: "booking_pending",
+      title: "New pending booking",
+      description: `${customer.fullName} booked an appointment — please review and confirm`,
+      metadata: { booking_id: booking!.id, contact_name: customer.fullName }
+    });
 
   return NextResponse.json({ booking }, { status: 201 });
 }
